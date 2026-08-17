@@ -321,11 +321,6 @@
             background: #f8fafc;
             color: #475569;
         }
-        .toggle-btn.active-toggle {
-            border-color: #2563eb;
-            background: #dbeafe;
-            color: #1e40af;
-        }
         .toggle-btn.active-toggle-defective {
             border-color: #dc2626;
             background: #fee2e2;
@@ -340,6 +335,11 @@
             border-color: #6366f1;
             background: #e0e7ff;
             color: #3730a3;
+        }
+        .toggle-btn.inactive-toggle {
+            border-color: #e2e8f0;
+            background: #f1f5f9;
+            color: #94a3b8;
         }
         .stat-change {
             font-size: 0.75rem;
@@ -368,7 +368,7 @@
             min-width: 180px;
         }
 
-        /* Executive Summary Modal Styles */
+        /* Executive Summary Modal */
         #execSummaryModal .modal-box {
             max-width: 700px;
             width: 95%;
@@ -398,6 +398,25 @@
             font-weight: 700;
             color: #64748b;
             letter-spacing: 0.5px;
+        }
+        .rate-change {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .rate-change.positive {
+            color: #dc2626;
+        }
+        .rate-change.negative {
+            color: #059669;
+        }
+        .rate-change.neutral {
+            color: #d97706;
+        }
+
+        /* Hide filter groups on specific tabs */
+        .filter-groups-hidden #supplierFilterGroup,
+        .filter-groups-hidden #yearFilterGroup {
+            display: none !important;
         }
     </style>
 </head>
@@ -434,16 +453,10 @@
                     <p id="summaryDateRange" class="text-xs text-slate-500 font-medium"></p>
                 </div>
             </div>
-            <div id="execSummaryContent" class="space-y-4 text-sm text-slate-700 leading-relaxed">
-                <!-- Content rendered by JS -->
-            </div>
+            <div id="execSummaryContent" class="space-y-4 text-sm text-slate-700 leading-relaxed"></div>
             <div class="mt-6 flex flex-wrap justify-end items-center gap-4 border-t border-slate-200 pt-4">
-                <button onclick="closeExecutiveSummary()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2 rounded-lg text-sm font-semibold transition">
-                    Close
-                </button>
-                <button onclick="closeExecutiveSummary(true)" class="text-xs text-slate-400 hover:text-slate-600 transition">
-                    Don't show again this session
-                </button>
+                <button onclick="closeExecutiveSummary()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2 rounded-lg text-sm font-semibold transition">Close</button>
+                <button onclick="closeExecutiveSummary(true)" class="text-xs text-slate-400 hover:text-slate-600 transition">Don't show again this session</button>
             </div>
         </div>
     </div>
@@ -455,9 +468,7 @@
             Loading data from GitHub...<br>
             <span class="percentage" id="loadProgressText">0%</span>
         </div>
-        <div class="loading-bar">
-            <div class="loading-bar-fill" id="loadProgressBar"></div>
-        </div>
+        <div class="loading-bar"><div class="loading-bar-fill" id="loadProgressBar"></div></div>
         <p class="text-xs text-slate-400 mt-4" id="loadStatusText">⏳ Fetching data.csv...</p>
     </div>
 
@@ -469,13 +480,8 @@
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Load Reject & Cutback Data</h3>
-            <p class="text-sm text-slate-600 mb-6">
-                Click below to select your <strong>CSV or XLSX</strong> file.
-                <br><span class="text-xs text-slate-400">The app will filter for Reject and Cutback rows.</span>
-            </p>
-            <button onclick="promptAndLoadFile()" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition">
-                📂 Open & Load File
-            </button>
+            <p class="text-sm text-slate-600 mb-6">Click below to select your <strong>CSV or XLSX</strong> file.<br><span class="text-xs text-slate-400">The app will filter for Reject and Cutback rows.</span></p>
+            <button onclick="promptAndLoadFile()" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition">📂 Open & Load File</button>
             <p class="text-xs text-slate-400 mt-4">💡 Tip: Data is automatically loaded from GitHub.</p>
         </div>
     </div>
@@ -491,15 +497,21 @@
                     <p class="text-xs text-slate-400">GitHub-driven • Reject & Cutback Analysis</p>
                 </div>
             </div>
-            <nav class="flex flex-wrap gap-1 bg-slate-800 p-1.5 rounded-xl text-sm font-medium">
-                <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2 rounded-lg bg-blue-600 text-white transition shadow">Dashboard & Trends</button>
-                <button onclick="switchTab('yoy')" id="tabBtn-yoy" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">YoY Comparison</button>
-                <button onclick="switchTab('weekly')" id="tabBtn-weekly" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Weekly Analysis</button>
-                <button onclick="switchTab('cutback')" id="tabBtn-cutback" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📐 Cutback Analytics</button>
-                <button onclick="switchTab('fabricators')" id="tabBtn-fabricators" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">👷 Pole Fabricators</button>
-                <button onclick="switchTab('import')" id="tabBtn-import" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Data Source</button>
-                <button onclick="switchTab('admin')" id="tabBtn-admin" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Admin Costing</button>
-            </nav>
+            <div class="flex items-center gap-3">
+                <!-- Global Summary Button -->
+                <button onclick="showExecutiveSummary(true)" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition shadow flex items-center gap-1">
+                    📊 Summary
+                </button>
+                <nav class="flex flex-wrap gap-1 bg-slate-800 p-1.5 rounded-xl text-sm font-medium">
+                    <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2 rounded-lg bg-blue-600 text-white transition shadow">Dashboard & Trends</button>
+                    <button onclick="switchTab('yoy')" id="tabBtn-yoy" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">YoY Comparison</button>
+                    <button onclick="switchTab('weekly')" id="tabBtn-weekly" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Weekly Analysis</button>
+                    <button onclick="switchTab('cutback')" id="tabBtn-cutback" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📐 Cutback Analytics</button>
+                    <button onclick="switchTab('fabricators')" id="tabBtn-fabricators" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">👷 Pole Fabricators</button>
+                    <button onclick="switchTab('import')" id="tabBtn-import" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Data Source</button>
+                    <button onclick="switchTab('admin')" id="tabBtn-admin" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Admin Costing</button>
+                </nav>
+            </div>
         </div>
     </header>
 
@@ -507,7 +519,7 @@
 
         <!-- Filter Controls Bar -->
         <div id="filterControls" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-wrap gap-6 items-center justify-between">
-            <div class="flex flex-wrap items-center gap-6">
+            <div class="flex flex-wrap items-center gap-6" id="filterGroups">
                 <div id="supplierFilterGroup">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Supplier:</label>
                     <select id="globalSupplierFilter" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg px-3 py-2 font-semibold focus:ring-2 focus:ring-blue-500">
@@ -600,14 +612,8 @@
                         <span class="inline-block mt-1 text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-medium">🏆 Top 5</span>
                     </div>
                     <div class="flex items-center gap-3 text-xs bg-slate-50 p-2 rounded-lg border border-slate-200 shadow-sm">
-                        <div>
-                            <label class="block font-bold uppercase text-slate-500 mb-0.5">From Month:</label>
-                            <input type="month" id="supplierFromMonth" onchange="applyFilters()" class="bg-white border border-slate-300 text-slate-900 rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="block font-bold uppercase text-slate-500 mb-0.5">To Month:</label>
-                            <input type="month" id="supplierToMonth" onchange="applyFilters()" class="bg-white border border-slate-300 text-slate-900 rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer">
-                        </div>
+                        <div><label class="block font-bold uppercase text-slate-500 mb-0.5">From Month:</label><input type="month" id="supplierFromMonth" onchange="applyFilters()" class="bg-white border border-slate-300 text-slate-900 rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"></div>
+                        <div><label class="block font-bold uppercase text-slate-500 mb-0.5">To Month:</label><input type="month" id="supplierToMonth" onchange="applyFilters()" class="bg-white border border-slate-300 text-slate-900 rounded px-2 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer"></div>
                     </div>
                 </div>
                 <div class="h-64 w-full"><canvas id="supplierLossChart"></canvas></div>
@@ -691,18 +697,27 @@
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Week Starting</label>
                             <input type="date" id="granularWeekPicker" onchange="updateGranularBreakdown()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg px-3 py-2 font-medium focus:ring-2 focus:ring-blue-500" />
                         </div>
-                        <button onclick="setGranularToCurrentWeek()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-lg font-semibold transition mt-1">Current Week</button>
-                        <button onclick="setGranularToPreviousWeek()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2.5 rounded-lg font-semibold transition mt-1">Previous Week</button>
+                        <button onclick="setGranularToPreviousWeek()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-lg font-semibold transition mt-1">Last Week</button>
+                        <button onclick="setGranularToTwoWeeksAgo()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs px-4 py-2.5 rounded-lg font-semibold transition mt-1">Two Weeks Ago</button>
                     </div>
                 </div>
 
                 <!-- Summary Cards -->
                 <div id="granularSummaryCards" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"></div>
 
-                <!-- Week-over-week change -->
+                <!-- Week-over-week change + Rate Comparison Chart -->
                 <div id="granularWoW" class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
                     <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">↕ Week-over-Week Change</p>
                     <div id="granularWoWContent" class="flex flex-wrap gap-6 text-sm"></div>
+                    
+                    <!-- Rate Change Text + Note -->
+                    <div id="granularRateContent" class="mt-3 pt-3 border-t border-slate-200 flex flex-wrap gap-4 text-sm"></div>
+                    
+                    <!-- NEW: Rate Comparison Bar Chart -->
+                    <div class="mt-4 pt-3 border-t border-slate-200">
+                        <p class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">📊 Rate Comparison (Current vs Previous Week)</p>
+                        <div class="h-48 w-full"><canvas id="rateComparisonChart"></canvas></div>
+                    </div>
                 </div>
 
                 <!-- Breakdown tables -->
@@ -731,7 +746,7 @@
                     </div>
                 </div>
 
-                <!-- Trend chart for the selected week's data over last 6 months -->
+                <!-- Trend chart -->
                 <div class="mt-6 pt-4 border-t border-slate-200">
                     <h3 class="text-sm font-bold text-slate-700 mb-3">📈 Weekly Trend (6-month rolling) – Selected Week Highlighted</h3>
                     <div class="h-64"><canvas id="granularTrendChart"></canvas></div>
@@ -815,9 +830,8 @@
             </div>
         </div>
 
-        <!-- POLE FABRICATORS TAB (NEW) -->
+        <!-- POLE FABRICATORS TAB -->
         <div id="view-fabricators" class="hidden space-y-6 fade-in">
-            <!-- Header + Filter -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-wrap justify-between items-center gap-4">
                     <div>
@@ -844,7 +858,6 @@
                 </div>
             </div>
 
-            <!-- Chart 1: Time Series - Defects, Boiler Fuel, Cutbacks -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-wrap justify-between items-center mb-4">
                     <div>
@@ -860,7 +873,6 @@
                 <div class="h-72"><canvas id="fabTimeSeriesChart"></canvas></div>
             </div>
 
-            <!-- Chart 2: Reasons Breakdown (with toggle for Defective/Boiler/Cutback) -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex flex-wrap justify-between items-center mb-4">
                     <div>
@@ -876,7 +888,6 @@
                 <div class="h-72"><canvas id="fabReasonsChart"></canvas></div>
             </div>
 
-            <!-- Summary Stats -->
             <div id="fabSummaryStats" class="grid grid-cols-1 md:grid-cols-4 gap-6"></div>
         </div>
 
@@ -897,15 +908,11 @@
                     <div class="flex flex-col sm:flex-row gap-3 items-end">
                         <div class="flex-1 w-full">
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Upload Local File (CSV or XLSX)</label>
-                            <button onclick="document.getElementById('csvFileInput').click()" class="w-full bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2.5 font-medium hover:bg-slate-50 transition cursor-pointer text-left">
-                                📤 Click to choose file
-                            </button>
+                            <button onclick="document.getElementById('csvFileInput').click()" class="w-full bg-white border border-slate-300 text-slate-700 text-sm rounded-lg px-4 py-2.5 font-medium hover:bg-slate-50 transition cursor-pointer text-left">📤 Click to choose file</button>
                             <input type="file" id="csvFileInput" accept=".csv,.xlsx" onchange="handleLocalFile(this.files[0])" class="hidden" />
                         </div>
                     </div>
-                    <div id="importStatus" class="hidden mt-4 bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl text-xs font-medium">
-                        ✅ <span id="importedRecordCount">0</span> records loaded.
-                    </div>
+                    <div id="importStatus" class="hidden mt-4 bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl text-xs font-medium">✅ <span id="importedRecordCount">0</span> records loaded.</div>
                 </div>
                 <div class="mt-4 text-xs text-slate-400 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <p class="font-semibold text-slate-600">Column Mapping:</p>
@@ -929,12 +936,8 @@
                     <p class="text-xs text-slate-500">These values drive 100% loss calculations.</p>
                 </div>
                 <div class="flex flex-wrap gap-3">
-                    <button onclick="runGapAnalysis()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition">
-                        🔍 Gap Analysis
-                    </button>
-                    <button onclick="saveAdminValues()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition">
-                        💾 Save Pricing Master
-                    </button>
+                    <button onclick="runGapAnalysis()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition">🔍 Gap Analysis</button>
+                    <button onclick="saveAdminValues()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition">💾 Save Pricing Master</button>
                 </div>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -1077,6 +1080,7 @@
         let chartPie, chartMonthly, chartYoY, chartWeekly, chartDefectPct, chartSupplier;
         let chartCutbackCost, chartCutbackMetres, chartCutbackReasons;
         let chartGranularTrend, chartFabTimeSeries, chartFabReasons;
+        let chartRateComparison; // NEW: rate comparison chart
         const monthsName = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         let productMaster = [];
         let allRowsCache = [];
@@ -1586,6 +1590,7 @@
                 '<tr><td colspan="5" class="text-center py-4 text-slate-400">No data</td></tr>';
             document.getElementById('granularSummaryCards').innerHTML = '';
             document.getElementById('granularWoWContent').innerHTML = '<span class="text-slate-400 text-xs">No data</span>';
+            document.getElementById('granularRateContent').innerHTML = '';
             const fabSelect = document.getElementById('fabricatorFilter');
             fabSelect.innerHTML = '<option value="ALL">All Fabricators</option>';
         }
@@ -1603,9 +1608,10 @@
             applyFilters();
             resetWeeklyDates();
             renderCutbackAnalytics();
-            setGranularToCurrentWeek();
+            setGranularToPreviousWeek();
             updateFabricatorCharts();
-            // Show executive summary after data is fully loaded and rendered
+            updateFabToggleStyles('toggle');
+            updateFabToggleStyles('reason');
             if (!hideSummary) {
                 setTimeout(showExecutiveSummary, 500);
             }
@@ -1761,12 +1767,12 @@
         function updateFilterControlsVisibility(activeTab) {
             const supplierGroup = document.getElementById('supplierFilterGroup');
             const yearGroup = document.getElementById('yearFilterGroup');
-            supplierGroup.classList.remove('filter-disabled');
-            yearGroup.classList.remove('filter-disabled');
-            const supplierLabel = supplierGroup.querySelector('label');
-            const yearLabel = yearGroup.querySelector('label');
-            if (supplierLabel) supplierLabel.innerHTML = 'Supplier:';
-            if (yearLabel) yearLabel.innerHTML = 'Year Focus:';
+            const filterGroups = document.getElementById('filterGroups');
+            if (activeTab === 'weekly' || activeTab === 'fabricators') {
+                filterGroups.classList.add('filter-groups-hidden');
+            } else {
+                filterGroups.classList.remove('filter-groups-hidden');
+            }
         }
 
         // ============================================================
@@ -1969,6 +1975,42 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
                     scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true,
                             title: { display: true, text: 'Poles' } } } }
+            });
+
+            // NEW: Rate Comparison Chart (bar chart)
+            const ctxRateComp = document.getElementById('rateComparisonChart').getContext('2d');
+            chartRateComparison = new Chart(ctxRateComp, {
+                type: 'bar',
+                data: {
+                    labels: ['Defective', 'Boiler Fuel', 'Cutback'],
+                    datasets: [{
+                        label: 'Current Week',
+                        data: [0, 0, 0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderRadius: 4
+                    }, {
+                        label: 'Previous Week',
+                        data: [0, 0, 0],
+                        backgroundColor: 'rgba(203, 213, 225, 0.8)',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { boxWidth: 12, font: { size: 10 } }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Rate (%)', font: { size: 10 } }
+                        }
+                    }
+                }
             });
         }
 
@@ -2354,7 +2396,7 @@
                 'px-4 py-2 rounded-lg bg-blue-600 text-white transition shadow';
             updateFilterControlsVisibility(tab);
             if (tab === 'weekly') { resetWeeklyDates();
-                setGranularToCurrentWeek(); }
+                setGranularToPreviousWeek(); }
             if (tab === 'cutback') renderCutbackAnalytics();
             if (tab === 'fabricators') updateFabricatorCharts();
         }
@@ -2680,18 +2722,19 @@
         }
 
         // ============================================================
-        // 14. WEEKLY GRANULAR BREAKDOWN (NEW)
+        // 14. WEEKLY GRANULAR BREAKDOWN
         // ============================================================
-        function setGranularToCurrentWeek() {
-            const now = new Date();
-            const ws = getWeekStart(now);
-            document.getElementById('granularWeekPicker').value = formatDateKey(ws);
-            updateGranularBreakdown();
-        }
-
         function setGranularToPreviousWeek() {
             const prev = getPreviousCalendarWeek();
             document.getElementById('granularWeekPicker').value = formatDateKey(prev.start);
+            updateGranularBreakdown();
+        }
+
+        function setGranularToTwoWeeksAgo() {
+            const prev = getPreviousCalendarWeek();
+            const twoWeeksAgoStart = new Date(prev.start);
+            twoWeeksAgoStart.setDate(twoWeeksAgoStart.getDate() - 7);
+            document.getElementById('granularWeekPicker').value = formatDateKey(twoWeeksAgoStart);
             updateGranularBreakdown();
         }
 
@@ -2704,82 +2747,109 @@
             weekEnd.setDate(weekEnd.getDate() + 6);
             weekEnd.setHours(23, 59, 59, 999);
 
-            const weekData = rawDataset.filter(d => d.dt >= weekStart && d.dt <= weekEnd);
+            const selectedSupplier = document.getElementById('globalSupplierFilter').value;
+            const selectedYear = document.getElementById('globalYearFilter').value;
+
+            function applyGlobalFilters(dataArray) {
+                return dataArray.filter(row => {
+                    let supplier = row._supplier || row.s || 'Unknown';
+                    let matchSupplier = (selectedSupplier === 'ALL') || (supplier.toLowerCase().includes(
+                        selectedSupplier.toLowerCase()));
+                    let year = row._parsedDate ? row._parsedDate.getFullYear() : (row.y || null);
+                    let matchYear = (selectedYear === 'ALL') || (year && year.toString() === selectedYear);
+                    return matchSupplier && matchYear;
+                });
+            }
+
+            const processedWeek = allRowsCache.filter(row => {
+                if (!row._parsedDate || isNaN(row._parsedDate.getTime())) return false;
+                return row._parsedDate >= weekStart && row._parsedDate <= weekEnd;
+            });
+            const processedFiltered = applyGlobalFilters(processedWeek);
+            const totalProcessed = processedFiltered.length;
 
             const prevWeekStart = new Date(weekStart);
             prevWeekStart.setDate(prevWeekStart.getDate() - 7);
             const prevWeekEnd = new Date(prevWeekStart);
             prevWeekEnd.setDate(prevWeekEnd.getDate() + 6);
             prevWeekEnd.setHours(23, 59, 59, 999);
+            const processedPrevWeek = allRowsCache.filter(row => {
+                if (!row._parsedDate || isNaN(row._parsedDate.getTime())) return false;
+                return row._parsedDate >= prevWeekStart && row._parsedDate <= prevWeekEnd;
+            });
+            const processedPrevFiltered = applyGlobalFilters(processedPrevWeek);
+            const totalProcessedPrev = processedPrevFiltered.length;
+
+            const weekData = rawDataset.filter(d => d.dt >= weekStart && d.dt <= weekEnd);
             const prevWeekData = rawDataset.filter(d => d.dt >= prevWeekStart && d.dt <= prevWeekEnd);
 
-            function aggregate(data) {
-                let def = 0,
-                    boil = 0,
-                    cut = 0,
-                    defQ = 0,
+            function aggregateCounts(data) {
+                let defQ = 0,
                     boilQ = 0,
                     cutQ = 0;
-                let classMap = {},
-                    supplierMap = {};
+                let defL = 0,
+                    boilL = 0,
+                    cutL = 0;
                 data.forEach(d => {
-                    if (d.c === 'Defective Pole') { def += d.l;
-                        defQ += d.q; } else if (d.c === 'Boiler Fuel') { boil += d.l;
-                        boilQ += d.q; } else if (d.c === 'Cutback / Resized') { cut += d.l;
-                        cutQ += d.q; }
-                    const cls = d.poleClass || 'UNKNOWN';
-                    if (!classMap[cls]) classMap[cls] = { def: 0, boil: 0, cut: 0 };
-                    if (d.c === 'Defective Pole') classMap[cls].def += d.q;
-                    else if (d.c === 'Boiler Fuel') classMap[cls].boil += d.q;
-                    else if (d.c === 'Cutback / Resized') classMap[cls].cut += d.q;
-                    if (!supplierMap[d.s]) supplierMap[d.s] = { def: 0, boil: 0, cut: 0 };
-                    if (d.c === 'Defective Pole') supplierMap[d.s].def += d.q;
-                    else if (d.c === 'Boiler Fuel') supplierMap[d.s].boil += d.q;
-                    else if (d.c === 'Cutback / Resized') supplierMap[d.s].cut += d.q;
+                    if (d.c === 'Defective Pole') { defQ += d.q;
+                        defL += d.l; } else if (d.c === 'Boiler Fuel') { boilQ += d.q;
+                        boilL += d.l; } else if (d.c === 'Cutback / Resized') { cutQ += d.q;
+                        cutL += d.l; }
                 });
-                return { def, boil, cut, defQ, boilQ, cutQ, classMap, supplierMap };
+                return { defQ, boilQ, cutQ, defL, boilL, cutL };
             }
 
-            const curr = aggregate(weekData);
-            const prev = aggregate(prevWeekData);
+            const curr = aggregateCounts(weekData);
+            const prev = aggregateCounts(prevWeekData);
 
-            const total = curr.defQ + curr.boilQ + curr.cutQ;
-            const totalPrev = prev.defQ + prev.boilQ + prev.cutQ;
-            const changeTotal = total - totalPrev;
-            const changeTotalPct = totalPrev > 0 ? (changeTotal / totalPrev) * 100 : 0;
+            const currDefRate = totalProcessed > 0 ? (curr.defQ / totalProcessed) * 100 : 0;
+            const currBoilRate = totalProcessed > 0 ? (curr.boilQ / totalProcessed) * 100 : 0;
+            const currCutRate = totalProcessed > 0 ? (curr.cutQ / totalProcessed) * 100 : 0;
+            const prevDefRate = totalProcessedPrev > 0 ? (prev.defQ / totalProcessedPrev) * 100 : 0;
+            const prevBoilRate = totalProcessedPrev > 0 ? (prev.boilQ / totalProcessedPrev) * 100 : 0;
+            const prevCutRate = totalProcessedPrev > 0 ? (prev.cutQ / totalProcessedPrev) * 100 : 0;
 
+            const rateDefChange = currDefRate - prevDefRate;
+            const rateBoilChange = currBoilRate - prevBoilRate;
+            const rateCutChange = currCutRate - prevCutRate;
+
+            // Summary Cards
             document.getElementById('granularSummaryCards').innerHTML =
                 `
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Defective Poles</p>
                 <h3 class="text-xl font-black text-red-600">${curr.defQ}</h3>
-                <p class="text-xs text-slate-500">£${curr.def.toFixed(2)} loss</p>
+                <p class="text-xs text-slate-500">£${curr.defL.toFixed(2)} loss</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Boiler Fuel</p>
                 <h3 class="text-xl font-black text-amber-600">${curr.boilQ}</h3>
-                <p class="text-xs text-slate-500">£${curr.boil.toFixed(2)} loss</p>
+                <p class="text-xs text-slate-500">£${curr.boilL.toFixed(2)} loss</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
                 <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Cutbacks</p>
                 <h3 class="text-xl font-black text-indigo-600">${curr.cutQ}</h3>
-                <p class="text-xs text-slate-500">£${curr.cut.toFixed(2)} loss</p>
+                <p class="text-xs text-slate-500">£${curr.cutL.toFixed(2)} loss</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
-                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Poles</p>
-                <h3 class="text-xl font-black text-slate-800">${total}</h3>
-                <p class="text-xs text-slate-500">${curr.defQ + curr.boilQ + curr.cutQ} rejected/cutback</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Processed</p>
+                <h3 class="text-xl font-black text-slate-800">${totalProcessed}</h3>
+                <p class="text-xs text-slate-500">Poles in this week</p>
             </div>
             `;
 
+            // Week-over-week count changes
             const defChange = curr.defQ - prev.defQ;
             const boilChange = curr.boilQ - prev.boilQ;
             const cutChange = curr.cutQ - prev.cutQ;
             const defPct = prev.defQ > 0 ? (defChange / prev.defQ) * 100 : 0;
             const boilPct = prev.boilQ > 0 ? (boilChange / prev.boilQ) * 100 : 0;
             const cutPct = prev.cutQ > 0 ? (cutChange / prev.cutQ) * 100 : 0;
+            const totalChange = (curr.defQ + curr.boilQ + curr.cutQ) - (prev.defQ + prev.boilQ + prev.cutQ);
+            const totalPrev = prev.defQ + prev.boilQ + prev.cutQ;
+            const totalPct = totalPrev > 0 ? (totalChange / totalPrev) * 100 : 0;
 
-            function changeHTML(label, val, pct, color) {
+            function changeHTML(label, val, pct) {
                 const cls = val > 0 ? 'up' : val < 0 ? 'down' : 'flat';
                 const sign = val > 0 ? '+' : '';
                 const arrow = val > 0 ? '↑' : val < 0 ? '↓' : '→';
@@ -2789,19 +2859,50 @@
             document.getElementById('granularWoWContent').innerHTML =
                 `
             <span class="text-xs font-bold text-slate-500">vs previous week:</span>
-            ${changeHTML('Defective', defChange, defPct, 'red')}
-            ${changeHTML('Boiler Fuel', boilChange, boilPct, 'amber')}
-            ${changeHTML('Cutback', cutChange, cutPct, 'indigo')}
-            <span class="text-xs text-slate-400">Total: ${total} (prev ${totalPrev}) ${changeTotal > 0 ? '↑' : changeTotal < 0 ? '↓' : '→'} ${Math.abs(changeTotalPct).toFixed(1)}%</span>
+            ${changeHTML('Defective', defChange, defPct)}
+            ${changeHTML('Boiler Fuel', boilChange, boilPct)}
+            ${changeHTML('Cutback', cutChange, cutPct)}
+            <span class="text-xs text-slate-400">Total: ${curr.defQ+curr.boilQ+curr.cutQ} (prev ${totalPrev}) ${totalChange > 0 ? '↑' : totalChange < 0 ? '↓' : '→'} ${Math.abs(totalPct).toFixed(1)}%</span>
             `;
 
+            // Rate change text with explanatory note
+            function rateChangeHTML(label, val, unit = 'pp') {
+                const cls = val > 0.01 ? 'positive' : val < -0.01 ? 'negative' : 'neutral';
+                const sign = val > 0 ? '+' : '';
+                return `<span class="rate-change ${cls}">${label} rate: ${sign}${val.toFixed(2)}${unit}</span>`;
+            }
+
+            document.getElementById('granularRateContent').innerHTML =
+                `
+            <span class="text-xs font-bold text-slate-500">Rate change (vs previous week):</span>
+            ${rateChangeHTML('Defective', rateDefChange)}
+            ${rateChangeHTML('Boiler Fuel', rateBoilChange)}
+            ${rateChangeHTML('Cutback', rateCutChange)}
+            <span class="text-xs text-slate-400">(Processed: ${totalProcessed} vs ${totalProcessedPrev})</span>
+            <span class="text-xs text-slate-400 w-full">💡 Note: Changes shown in <strong>percentage points (pp)</strong> – the absolute difference in proportions. e.g., 8.0% → 12.3% = +4.3pp.</span>
+            `;
+
+            // Update the Rate Comparison Bar Chart
+            chartRateComparison.data.datasets[0].data = [currDefRate, currBoilRate, currCutRate];
+            chartRateComparison.data.datasets[1].data = [prevDefRate, prevBoilRate, prevCutRate];
+            chartRateComparison.update();
+
+            // Class and Supplier tables
+            let classMap = {};
+            weekData.forEach(d => {
+                const cls = d.poleClass || 'UNKNOWN';
+                if (!classMap[cls]) classMap[cls] = { def: 0, boil: 0, cut: 0 };
+                if (d.c === 'Defective Pole') classMap[cls].def += d.q;
+                else if (d.c === 'Boiler Fuel') classMap[cls].boil += d.q;
+                else if (d.c === 'Cutback / Resized') classMap[cls].cut += d.q;
+            });
             let classHtml = '';
-            const classKeys = Object.keys(curr.classMap).sort();
+            const classKeys = Object.keys(classMap).sort();
             if (classKeys.length === 0) {
                 classHtml = '<tr><td colspan="5" class="text-center py-4 text-slate-400">No data for this week</td></tr>';
             } else {
                 classKeys.forEach(cls => {
-                    const d = curr.classMap[cls];
+                    const d = classMap[cls];
                     const totalCls = d.def + d.boil + d.cut;
                     const badgeCls = getClassBadgeClass(cls);
                     classHtml +=
@@ -2810,18 +2911,24 @@
             }
             document.getElementById('granularClassTable').innerHTML = classHtml;
 
+            let supplierMap = {};
+            weekData.forEach(d => {
+                if (!supplierMap[d.s]) supplierMap[d.s] = { def: 0, boil: 0, cut: 0 };
+                if (d.c === 'Defective Pole') supplierMap[d.s].def += d.q;
+                else if (d.c === 'Boiler Fuel') supplierMap[d.s].boil += d.q;
+                else if (d.c === 'Cutback / Resized') supplierMap[d.s].cut += d.q;
+            });
             let supplierHtml = '';
-            const supplierKeys = Object.keys(curr.supplierMap).sort((a, b) => {
-                const totalA = curr.supplierMap[a].def + curr.supplierMap[a].boil + curr.supplierMap[a].cut;
-                const totalB = curr.supplierMap[b].def + curr.supplierMap[b].boil + curr.supplierMap[b].cut;
+            const supplierKeys = Object.keys(supplierMap).sort((a, b) => {
+                const totalA = supplierMap[a].def + supplierMap[a].boil + supplierMap[a].cut;
+                const totalB = supplierMap[b].def + supplierMap[b].boil + supplierMap[b].cut;
                 return totalB - totalA;
             });
             if (supplierKeys.length === 0) {
-                supplierHtml =
-                    '<tr><td colspan="5" class="text-center py-4 text-slate-400">No data for this week</td></tr>';
+                supplierHtml = '<tr><td colspan="5" class="text-center py-4 text-slate-400">No data for this week</td></tr>';
             } else {
                 supplierKeys.forEach(s => {
-                    const d = curr.supplierMap[s];
+                    const d = supplierMap[s];
                     const totalS = d.def + d.boil + d.cut;
                     supplierHtml +=
                         `<tr><td class="font-medium">${s}</td><td class="text-center">${d.def}</td><td class="text-center">${d.boil}</td><td class="text-center">${d.cut}</td><td class="text-center font-bold">${totalS}</td></tr>`;
@@ -2893,25 +3000,27 @@
         function toggleFabCategory(category) {
             const idx = fabEnabledCategories.indexOf(category);
             if (idx > -1) { fabEnabledCategories.splice(idx, 1); } else { fabEnabledCategories.push(category); }
-            document.querySelectorAll('[data-fab-toggle]').forEach(btn => {
-                const cat = btn.getAttribute('data-fab-toggle');
-                const isActive = fabEnabledCategories.includes(cat);
-                btn.className = 'toggle-btn ' + (isActive ? 'active-toggle-' + cat.toLowerCase().replace(/[^a-z]/g, '') :
-                    '');
-            });
+            updateFabToggleStyles('toggle');
             updateFabricatorCharts();
         }
 
         function toggleFabReasonCategory(category) {
             const idx = fabReasonEnabledCategories.indexOf(category);
             if (idx > -1) { fabReasonEnabledCategories.splice(idx, 1); } else { fabReasonEnabledCategories.push(category); }
-            document.querySelectorAll('[data-fab-reason-toggle]').forEach(btn => {
-                const cat = btn.getAttribute('data-fab-reason-toggle');
-                const isActive = fabReasonEnabledCategories.includes(cat);
-                btn.className = 'toggle-btn ' + (isActive ? 'active-toggle-' + cat.toLowerCase().replace(/[^a-z]/g, '') :
-                    '');
-            });
+            updateFabToggleStyles('reason');
             updateFabricatorCharts();
+        }
+
+        function updateFabToggleStyles(type) {
+            const selector = type === 'toggle' ? '[data-fab-toggle]' : '[data-fab-reason-toggle]';
+            const enabledList = type === 'toggle' ? fabEnabledCategories : fabReasonEnabledCategories;
+            document.querySelectorAll(selector).forEach(btn => {
+                const cat = btn.getAttribute(type === 'toggle' ? 'data-fab-toggle' : 'data-fab-reason-toggle');
+                const isActive = enabledList.includes(cat);
+                const suffix = cat.split(/[ \/]/)[0].toLowerCase();
+                const activeClass = isActive ? 'active-toggle-' + suffix : 'inactive-toggle';
+                btn.className = 'toggle-btn ' + activeClass;
+            });
         }
 
         function updateFabricatorCharts() {
@@ -3013,7 +3122,7 @@
         }
 
         // ============================================================
-        // 16. EXECUTIVE SUMMARY (NEW)
+        // 16. ENHANCED EXECUTIVE SUMMARY
         // ============================================================
         function getLastTwoWeeksData() {
             const lastWeek = getPreviousCalendarWeek();
@@ -3052,8 +3161,31 @@
             const lastWeekData = rawDataset.filter(d => d.dt >= weeks.lastWeek.start && d.dt <= weeks.lastWeek.end);
             const prevWeekData = rawDataset.filter(d => d.dt >= weeks.prevWeek.start && d.dt <= weeks.prevWeek.end);
 
+            const selectedSupplier = document.getElementById('globalSupplierFilter').value;
+            const selectedYear = document.getElementById('globalYearFilter').value;
+
+            function filterProcessedRows(rows, start, end) {
+                return rows.filter(row => {
+                    if (!row._parsedDate || isNaN(row._parsedDate.getTime())) return false;
+                    let supplier = row._supplier || '';
+                    let matchSupplier = (selectedSupplier === 'ALL') || (supplier && supplier.toLowerCase().includes(
+                        selectedSupplier.toLowerCase()));
+                    let year = row._parsedDate.getFullYear();
+                    let matchYear = (selectedYear === 'ALL') || (year.toString() === selectedYear);
+                    return matchSupplier && matchYear && row._parsedDate >= start && row._parsedDate <= end;
+                });
+            }
+
+            const lastProcessed = filterProcessedRows(allRowsCache, weeks.lastWeek.start, weeks.lastWeek.end).length;
+            const prevProcessed = filterProcessedRows(allRowsCache, weeks.prevWeek.start, weeks.prevWeek.end).length;
+
             const lastDefCost = lastWeekData.filter(d => d.c === 'Defective Pole').reduce((s, d) => s + d.l, 0);
             const prevDefCost = prevWeekData.filter(d => d.c === 'Defective Pole').reduce((s, d) => s + d.l, 0);
+            const lastDefCount = lastWeekData.filter(d => d.c === 'Defective Pole').length;
+            const prevDefCount = prevWeekData.filter(d => d.c === 'Defective Pole').length;
+            const avgLastDef = lastDefCount > 0 ? lastDefCost / lastDefCount : 0;
+            const avgPrevDef = prevDefCount > 0 ? prevDefCost / prevDefCount : 0;
+
             const diff = lastDefCost - prevDefCost;
             let trend = 'continuation';
             let trendDesc = 'stayed the same';
@@ -3079,7 +3211,24 @@
                 expectationDesc = 'in line with the six-month average of £' + avgWeeklyCost.toFixed(2);
             }
 
-            const defectiveCount = lastWeekData.filter(d => d.c === 'Defective Pole').length;
+            const procChange = lastProcessed - prevProcessed;
+            const procChangeDesc = procChange > 0 ? 'more' : procChange < 0 ? 'fewer' : 'the same number of';
+            const procAbs = Math.abs(procChange);
+
+            const avgChange = avgLastDef - avgPrevDef;
+            const avgChangeDesc = avgChange > 0.01 ? 'higher' : avgChange < -0.01 ? 'lower' : 'similar';
+            const avgChangeAbs = Math.abs(avgChange).toFixed(2);
+
+            let overallConclusion = '';
+            if (diff < 0) {
+                overallConclusion = 'improvement on the previous week.';
+            } else if (diff > 0) {
+                overallConclusion = 'deterioration compared to the previous week.';
+            } else {
+                overallConclusion = 'no significant change from the previous week.';
+            }
+
+            const defectiveCount = lastDefCount;
             const boilerCount = lastWeekData.filter(d => d.c === 'Boiler Fuel').length;
             const cutbackMetres = lastWeekData.filter(d => d.c === 'Cutback / Resized').reduce((s, d) => s + (d
                 .linearMetresLost || 0), 0);
@@ -3120,8 +3269,11 @@
                     `A total of <strong>${cutbackMetres.toFixed(1)} metres</strong> of poles were cut back, primarily supplied by <strong>${formatList(topCutSuppliers)}</strong> of <strong>${formatList(topCutDescriptions)}</strong> (cut back for <strong>${formatList(topCutReasons)}</strong>).`;
             }
 
+            const intro =
+                `Last week saw a <strong>${trend}</strong> in terms of overall cost of defective poles (<strong>£${lastDefCost.toFixed(2)}</strong>), which ${trendDesc} compared to the previous week (<strong>£${prevDefCost.toFixed(2)}</strong>). This is <strong>${expectationDesc}</strong>. The actual cost is influenced by size and class of pole as well as quantities. The week saw <strong>${procAbs} ${procChangeDesc}</strong> poles processed than the preceding week (${lastProcessed} vs ${prevProcessed}) and a <strong>${avgChangeDesc}</strong> representation of higher‑value poles being rejected (average cost per defective pole: <strong>£${avgLastDef.toFixed(2)}</strong> vs £${avgPrevDef.toFixed(2)} last week). In general terms, the results indicate an overall <strong>${overallConclusion}</strong>`;
+
             return {
-                intro: `Last week saw a <strong>${trend}</strong> in terms of overall cost of defective poles (<strong>£${lastDefCost.toFixed(2)}</strong>), which ${trendDesc} compared to the previous week (<strong>£${prevDefCost.toFixed(2)}</strong>). This is <strong>${expectationDesc}</strong>.`,
+                intro: intro,
                 defective: defectiveText,
                 boiler: boilerText,
                 cutback: cutbackText,
@@ -3129,8 +3281,14 @@
             };
         }
 
-        function showExecutiveSummary() {
-            if (rawDataset.length === 0 || hideSummary) return;
+        function showExecutiveSummary(force = false) {
+            if (rawDataset.length === 0) {
+                showToast('⚠️ No data loaded. Please load data first.', true);
+                return;
+            }
+            if (!force && hideSummary) {
+                if (hideSummary && !force) return;
+            }
             const summary = buildExecutiveSummaryText();
             document.getElementById('summaryDateRange').innerText = summary.dateRange;
             document.getElementById('execSummaryContent').innerHTML =
@@ -3176,7 +3334,7 @@
             document.getElementById('supplierToMonth').value = prevMonthVal;
             updateFilterControlsVisibility('dashboard');
             renderCutbackAnalytics();
-            setGranularToCurrentWeek();
+            setGranularToPreviousWeek();
             updateFabricatorCharts();
             setTimeout(() => showLoading(false), 300);
         }
