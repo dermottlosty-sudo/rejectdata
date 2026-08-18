@@ -435,7 +435,7 @@
         .clickable-cell:active {
             background: #bfdbfe;
         }
-        /* Modal styles */
+        /* Detail Modal */
         #detailModal .modal-box {
             max-width: 800px;
             width: 95%;
@@ -970,7 +970,7 @@
                         <li><strong>Movement Reason</strong> → Used to classify rejects</li>
                         <li><strong>Detail</strong> → Used to infer cutback length when Associated Product Description is missing</li>
                         <li><strong>Tender Cost Price Difference</strong> → Cutback volume difference (m³)</li>
-                        <li><strong>Username</strong> → Pole Fabricator (display name cleaned)</li>
+                        <li><strong>Submitted By</strong> → Pole Fabricator (display name cleaned)</li>
                     </ul>
                 </div>
             </div>
@@ -1137,9 +1137,7 @@
         let fabEnabledCategories = ['Defective Pole', 'Boiler Fuel', 'Cutback / Resized'];
         let fabReasonEnabledCategories = ['Defective Pole', 'Boiler Fuel', 'Cutback / Resized'];
         let hideSummary = false;
-
-        // For drill-down
-        let currentWeekData = []; // stores the data points for the selected week (rawDataset filtered)
+        let currentWeekData = [];
 
         // GitHub URLs
         const GITHUB_DATA_URL = 'https://raw.githubusercontent.com/dermottlosty-sudo/rejectdata/refs/heads/main/data/data.csv';
@@ -1389,18 +1387,19 @@
         }
 
         // ============================================================
-        // 7. DATA PARSING (includes Username → fabricator)
+        // 7. DATA PARSING (uses "Submitted By" for fabricator)
         // ============================================================
         function parseDataToDataset(rows) {
             allRowsCache = rows.map(function(row) {
                 var dateStr = (row['Date'] || '').toString().trim();
                 var dateObj = parseUKDate(dateStr);
                 var supplier = String(row['Supplier'] || row['From'] || '').trim() || 'Unknown';
-                var username = String(row['Username'] || row['username'] || '').trim() || 'Unknown';
+                var submittedBy = String(row['Submitted By'] || row['Submitted_By'] || row['SubmittedBy'] || '').trim() ||
+                    'Unknown';
                 return {
                     _parsedDate: dateObj,
                     _supplier: supplier,
-                    _username: username
+                    _submittedBy: submittedBy
                 };
             });
 
@@ -1439,9 +1438,11 @@
                 var movementReason = (row['Movement Reason'] || '').toString().trim();
                 var supplier = String(row['Supplier'] || row['From'] || '').trim() || 'Unknown';
                 var dateStr = (row['Date'] || '').toString().trim();
-                var rawUsername = String(originalRow['Username'] || row['Username'] || row['username'] || '').trim() ||
+                // Use 'Submitted By' from the original row (or fallback to row)
+                var rawSubmitted = String(originalRow['Submitted By'] || originalRow['Submitted_By'] || originalRow[
+                    'SubmittedBy'] || row['Submitted By'] || row['Submitted_By'] || row['SubmittedBy'] || '').trim() ||
                     'Unknown';
-                var fabricator = cleanFabricatorName(rawUsername);
+                var fabricator = cleanFabricatorName(rawSubmitted);
 
                 var isExcluded = false;
                 for (var i = 0; i < excludedDescriptions.length; i++) {
@@ -2766,7 +2767,7 @@
         }
 
         // ============================================================
-        // 14. WEEKLY GRANULAR BREAKDOWN with clickable drill-down
+        // 14. WEEKLY GRANULAR BREAKDOWN
         // ============================================================
         function setGranularToPreviousWeek() {
             const prev = getPreviousCalendarWeek();
@@ -2824,9 +2825,8 @@
             const processedPrevFiltered = applyGlobalFilters(processedPrevWeek);
             const totalProcessedPrev = processedPrevFiltered.length;
 
-            // Filter rawDataset for the selected week (store in global for drill-down)
             const weekData = rawDataset.filter(d => d.dt >= weekStart && d.dt <= weekEnd);
-            currentWeekData = weekData; // store for drill-down
+            currentWeekData = weekData;
             const prevWeekData = rawDataset.filter(d => d.dt >= prevWeekStart && d.dt <= prevWeekEnd);
 
             function aggregateCounts(data) {
@@ -2859,7 +2859,6 @@
             const rateBoilChange = currBoilRate - prevBoilRate;
             const rateCutChange = currCutRate - prevCutRate;
 
-            // Summary Cards
             document.getElementById('granularSummaryCards').innerHTML =
                 `
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -2884,7 +2883,6 @@
             </div>
             `;
 
-            // Week-over-week count changes
             const defChange = curr.defQ - prev.defQ;
             const boilChange = curr.boilQ - prev.boilQ;
             const cutChange = curr.cutQ - prev.cutQ;
@@ -2911,7 +2909,6 @@
             <span class="text-xs text-slate-400">Total: ${curr.defQ+curr.boilQ+curr.cutQ} (prev ${totalPrev}) ${totalChange > 0 ? '↑' : totalChange < 0 ? '↓' : '→'} ${Math.abs(totalPct).toFixed(1)}%</span>
             `;
 
-            // Rate change text with explanatory note
             function rateChangeHTML(label, val, unit = 'pp') {
                 const cls = val > 0.01 ? 'positive' : val < -0.01 ? 'negative' : 'neutral';
                 const sign = val > 0 ? '+' : '';
@@ -2928,12 +2925,11 @@
             <span class="text-xs text-slate-400 w-full">💡 Note: Changes shown in <strong>percentage points (pp)</strong> – the absolute difference in proportions. e.g., 8.0% → 12.3% = +4.3pp.</span>
             `;
 
-            // Update Rate Comparison Bar Chart
             chartRateComparison.data.datasets[0].data = [currDefRate, currBoilRate, currCutRate];
             chartRateComparison.data.datasets[1].data = [prevDefRate, prevBoilRate, prevCutRate];
             chartRateComparison.update();
 
-            // Build Class table with clickable cells
+            // Class table with clickable cells
             let classMap = {};
             weekData.forEach(d => {
                 const cls = d.poleClass || 'UNKNOWN';
@@ -2970,7 +2966,7 @@
             }
             document.getElementById('granularClassTableBody').innerHTML = classHtml;
 
-            // Build Supplier table with clickable cells
+            // Supplier table with clickable cells
             let supplierMap = {};
             weekData.forEach(d => {
                 if (!supplierMap[d.s]) supplierMap[d.s] = { def: 0, boil: 0, cut: 0 };
@@ -3009,7 +3005,7 @@
             }
             document.getElementById('granularSupplierTableBody').innerHTML = supplierHtml;
 
-            // Attach click listeners to all clickable cells
+            // Attach click listeners
             document.querySelectorAll('.clickable-cell').forEach(el => {
                 el.addEventListener('click', function(e) {
                     const category = this.dataset.category;
@@ -3077,7 +3073,6 @@
             const subtitle = document.getElementById('detailModalSubtitle');
             const body = document.getElementById('detailModalBody');
 
-            // Filter currentWeekData by category and group
             let filtered = currentWeekData.filter(d => d.c === category);
             if (type === 'class') {
                 filtered = filtered.filter(d => (d.poleClass || 'UNKNOWN') === group);
