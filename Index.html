@@ -436,20 +436,28 @@
             background: #bfdbfe;
         }
         /* Detail Modal */
-        #detailModal .modal-box {
+        #detailModal .modal-box,
+        #supplierDetailModal .modal-box {
             max-width: 800px;
             width: 95%;
             max-height: 90vh;
             overflow-y: auto;
         }
         #detailModal table td,
-        #detailModal table th {
+        #detailModal table th,
+        #supplierDetailModal table td,
+        #supplierDetailModal table th {
             padding: 6px 10px;
             font-size: 0.75rem;
         }
-        #detailModal .modal-table-wrap {
+        #detailModal .modal-table-wrap,
+        #supplierDetailModal .modal-table-wrap {
             max-height: 60vh;
             overflow-y: auto;
+        }
+        /* Supplier chart bars clickable */
+        .supplier-bar-clickable {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -516,6 +524,30 @@
             </div>
             <div class="mt-4 flex justify-end">
                 <button onclick="closeDetailModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUPPLIER DETAIL MODAL (for bar chart drill-down) -->
+    <div id="supplierDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 relative">
+            <button onclick="closeSupplierDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition text-xl">✕</button>
+            <h3 id="supplierDetailModalTitle" class="text-lg font-bold text-slate-800 mb-1">Supplier Loss Breakdown</h3>
+            <p id="supplierDetailModalSubtitle" class="text-xs text-slate-500 mb-4"></p>
+            <div class="modal-table-wrap border border-slate-200 rounded-xl overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-50 text-slate-700 uppercase tracking-wider border-b border-slate-200 font-bold sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2">Pole Class</th>
+                            <th class="px-4 py-2 text-center">Quantity</th>
+                            <th class="px-4 py-2 text-right">Total Loss (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supplierDetailModalBody" class="divide-y divide-slate-200"></tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="closeSupplierDetailModal()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition">Close</button>
             </div>
         </div>
     </div>
@@ -1827,7 +1859,7 @@
         }
 
         // ============================================================
-        // 10. CHART INIT
+        // 10. CHART INIT (FIXED: onClick inside options)
         // ============================================================
         function initCharts() {
             const shadowPlugin = {
@@ -1949,8 +1981,24 @@
                 type: 'bar',
                 data: { labels: [], datasets: [{ label: 'Total Loss (£)', data: [], backgroundColor: createGrad(
                             ctxSupplier, '#3b82f6', '#1e3a8a'), borderRadius: 4 }] },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true } } }
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } },
+                    // ✅ Click handler defined inside options
+                    onClick: function(event, elements) {
+                        if (elements.length === 0) return;
+                        const element = elements[0];
+                        const index = element.index;
+                        const label = this.data.labels[index];
+                        if (!label) return;
+                        const fromMonth = document.getElementById('supplierFromMonth').value;
+                        const toMonth = document.getElementById('supplierToMonth').value;
+                        openSupplierDetailModal(label, fromMonth, toMonth);
+                    }
+                }
             });
 
             // Cutback Cost Chart
@@ -3117,7 +3165,80 @@
         }
 
         // ============================================================
-        // 15. POLE FABRICATORS TAB
+        // 15. SUPPLIER DETAIL MODAL (for bar chart drill-down)
+        // ============================================================
+        function openSupplierDetailModal(supplier, fromMonth, toMonth) {
+            const modal = document.getElementById('supplierDetailModal');
+            const title = document.getElementById('supplierDetailModalTitle');
+            const subtitle = document.getElementById('supplierDetailModalSubtitle');
+            const body = document.getElementById('supplierDetailModalBody');
+
+            // Filter rawDataset for this supplier and month range
+            let filtered = rawDataset.filter(d => {
+                if (d.s !== supplier) return false;
+                const rowMonthNum = d.y * 100 + d.m;
+                let isValid = true;
+                if (fromMonth) {
+                    const fromNum = parseInt(fromMonth.replace('-', ''));
+                    if (rowMonthNum < fromNum) isValid = false;
+                }
+                if (toMonth) {
+                    const toNum = parseInt(toMonth.replace('-', ''));
+                    if (rowMonthNum > toNum) isValid = false;
+                }
+                return isValid;
+            });
+
+            if (filtered.length === 0) {
+                body.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">No records found for this supplier in the selected month range.</td></tr>`;
+            } else {
+                // Group by pole class
+                const classMap = {};
+                filtered.forEach(d => {
+                    const cls = d.poleClass || 'UNKNOWN';
+                    if (!classMap[cls]) classMap[cls] = { qty: 0, loss: 0 };
+                    classMap[cls].qty += d.q;
+                    classMap[cls].loss += d.l;
+                });
+                // Sort by loss descending
+                const sortedClasses = Object.keys(classMap).sort((a, b) => classMap[b].loss - classMap[a].loss);
+                let rows = '';
+                sortedClasses.forEach(cls => {
+                    const data = classMap[cls];
+                    rows += `
+                        <tr>
+                            <td class="px-4 py-2 font-medium"><span class="class-badge ${getClassBadgeClass(cls)}">${cls}</span></td>
+                            <td class="px-4 py-2 text-center">${data.qty}</td>
+                            <td class="px-4 py-2 text-right">£${data.loss.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                // Add total row
+                const totalQty = filtered.reduce((sum, d) => sum + d.q, 0);
+                const totalLoss = filtered.reduce((sum, d) => sum + d.l, 0);
+                rows += `
+                    <tr class="font-bold border-t border-slate-300">
+                        <td class="px-4 py-2">TOTAL</td>
+                        <td class="px-4 py-2 text-center">${totalQty}</td>
+                        <td class="px-4 py-2 text-right">£${totalLoss.toFixed(2)}</td>
+                    </tr>
+                `;
+                body.innerHTML = rows;
+            }
+
+            const fromLabel = fromMonth ? `${fromMonth}` : 'start';
+            const toLabel = toMonth ? `${toMonth}` : 'end';
+            title.textContent = `Loss Breakdown for ${supplier}`;
+            subtitle.textContent = `Month range: ${fromLabel} to ${toLabel} | ${filtered.length} record(s)`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeSupplierDetailModal() {
+            document.getElementById('supplierDetailModal').classList.add('hidden');
+        }
+
+        // ============================================================
+        // 16. POLE FABRICATORS TAB
         // ============================================================
         function resetFabDates() {
             const now = new Date();
@@ -3253,7 +3374,7 @@
         }
 
         // ============================================================
-        // 16. ENHANCED EXECUTIVE SUMMARY
+        // 17. ENHANCED EXECUTIVE SUMMARY
         // ============================================================
         function getLastTwoWeeksData() {
             const lastWeek = getPreviousCalendarWeek();
@@ -3442,36 +3563,49 @@
         }
 
         // ============================================================
-        // 17. INITIALIZE APP
+        // 18. INITIALIZE APP (FIXED: set month pickers BEFORE loading data)
         // ============================================================
         async function initializeApp() {
             showLoading(true, 'Initializing app...');
             initCharts();
             resetAppData();
-            updateLoadingProgress(5, '📦 Loading pricing data...');
-            await loadPricesFromGitHub();
-            await loadDataFromGitHub();
+
+            // --- Set date filters early so applyFilters() uses correct range on first load ---
             const now = new Date();
             const sixMonthsAgo = new Date(now);
             sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+            // Weekly date pickers
             document.getElementById('weeklyFromDate').value = formatDateKey(sixMonthsAgo);
             document.getElementById('weeklyToDate').value = formatDateKey(now);
+
+            // Fabricator date pickers
             document.getElementById('fabFromDate').value = formatDateKey(sixMonthsAgo);
             document.getElementById('fabToDate').value = formatDateKey(now);
+
+            // Supplier month range pickers (default to previous month)
             const prevMonthDate = new Date();
             prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
             const prevMonthVal = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
             document.getElementById('supplierFromMonth').value = prevMonthVal;
             document.getElementById('supplierToMonth').value = prevMonthVal;
+
+            // Now load data – applyFilters() will be called with the correct month range
+            updateLoadingProgress(5, '📦 Loading pricing data...');
+            await loadPricesFromGitHub();
+            await loadDataFromGitHub();
+
+            // Additional setup that doesn't depend on data
             updateFilterControlsVisibility('dashboard');
             renderCutbackAnalytics();
             setGranularToPreviousWeek();
             updateFabricatorCharts();
+
             setTimeout(() => showLoading(false), 300);
         }
 
         // ============================================================
-        // 18. ONLOAD
+        // 19. ONLOAD
         // ============================================================
         window.onload = function() {
             document.getElementById('passwordModal').classList.remove('hidden');
