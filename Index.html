@@ -15,7 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js">
     </script>
     <style>
-        /* existing styles ... */
         .active-tab {
             border-bottom: 3px solid #2563eb;
             color: #2563eb;
@@ -369,7 +368,6 @@
             min-width: 180px;
         }
 
-        /* Executive Summary Modal */
         #execSummaryModal .modal-box {
             max-width: 700px;
             width: 95%;
@@ -414,13 +412,11 @@
             color: #d97706;
         }
 
-        /* Hide filter groups on specific tabs */
         .filter-groups-hidden #supplierFilterGroup,
         .filter-groups-hidden #yearFilterGroup {
             display: none !important;
         }
 
-        /* Clickable table cells for drill-down */
         .clickable-cell {
             cursor: pointer;
             transition: background 0.15s;
@@ -435,7 +431,7 @@
         .clickable-cell:active {
             background: #bfdbfe;
         }
-        /* Detail Modal */
+
         #detailModal .modal-box,
         #supplierDetailModal .modal-box {
             max-width: 800px;
@@ -455,9 +451,31 @@
             max-height: 60vh;
             overflow-y: auto;
         }
-        /* Supplier chart bars clickable */
         .supplier-bar-clickable {
             cursor: pointer;
+        }
+
+        /* Supplier detail modal — clickable class rows */
+        .supplier-class-row {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .supplier-class-row:hover {
+            background: #eff6ff;
+        }
+        .supplier-class-row .qty-link {
+            color: #2563eb;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+        .supplier-class-row .qty-link:hover {
+            color: #1d4ed8;
+        }
+
+        /* Toast container z-index */
+        #toast {
+            z-index: 99999;
         }
     </style>
 </head>
@@ -502,8 +520,8 @@
         </div>
     </div>
 
-    <!-- DETAIL DRILL-DOWN MODAL -->
-    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4 hidden">
+    <!-- DETAIL DRILL-DOWN MODAL (reused for weekly + supplier drill-down) -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 hidden">
         <div class="modal-box bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 relative">
             <button onclick="closeDetailModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition text-xl">✕</button>
             <h3 id="detailModalTitle" class="text-lg font-bold text-slate-800 mb-2">Details</h3>
@@ -1470,7 +1488,6 @@
                 var movementReason = (row['Movement Reason'] || '').toString().trim();
                 var supplier = String(row['Supplier'] || row['From'] || '').trim() || 'Unknown';
                 var dateStr = (row['Date'] || '').toString().trim();
-                // Use 'Submitted By' from the original row (or fallback to row)
                 var rawSubmitted = String(originalRow['Submitted By'] || originalRow['Submitted_By'] || originalRow[
                     'SubmittedBy'] || row['Submitted By'] || row['Submitted_By'] || row['SubmittedBy'] || '').trim() ||
                     'Unknown';
@@ -1859,7 +1876,7 @@
         }
 
         // ============================================================
-        // 10. CHART INIT (FIXED: onClick inside options)
+        // 10. CHART INIT
         // ============================================================
         function initCharts() {
             const shadowPlugin = {
@@ -1987,7 +2004,6 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { x: { beginAtZero: true } },
-                    // ✅ Click handler defined inside options
                     onClick: function(event, elements) {
                         if (elements.length === 0) return;
                         const element = elements[0];
@@ -2001,7 +2017,6 @@
                 }
             });
 
-            // Cutback Cost Chart
             const ctxCutbackCost = document.getElementById('cutbackCostChart').getContext('2d');
             chartCutbackCost = new Chart(ctxCutbackCost, {
                 type: 'line',
@@ -2010,7 +2025,6 @@
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Cost (£)' } } } }
             });
 
-            // Cutback Metres Chart
             const ctxCutbackMetres = document.getElementById('cutbackMetresChart').getContext('2d');
             chartCutbackMetres = new Chart(ctxCutbackMetres, {
                 type: 'line',
@@ -2019,7 +2033,6 @@
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Metres' } } } }
             });
 
-            // Cutback Reasons Chart
             const ctxCutbackReasons = document.getElementById('cutbackReasonsChart').getContext('2d');
             chartCutbackReasons = new Chart(ctxCutbackReasons, {
                 type: 'bar',
@@ -2028,7 +2041,6 @@
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Metres' } } } }
             });
 
-            // Granular Trend Chart
             const ctxGranular = document.getElementById('granularTrendChart').getContext('2d');
             chartGranularTrend = new Chart(ctxGranular, {
                 type: 'line',
@@ -2044,7 +2056,6 @@
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Count' } } } }
             });
 
-            // Fabricator Time Series Chart
             const ctxFabTime = document.getElementById('fabTimeSeriesChart').getContext('2d');
             chartFabTimeSeries = new Chart(ctxFabTime, {
                 type: 'line',
@@ -2062,7 +2073,6 @@
                     scales: { y: { beginAtZero: true, title: { display: true, text: 'Poles' } } } }
             });
 
-            // Fabricator Reasons Chart
             const ctxFabReasons = document.getElementById('fabReasonsChart').getContext('2d');
             chartFabReasons = new Chart(ctxFabReasons, {
                 type: 'bar',
@@ -2076,7 +2086,6 @@
                             title: { display: true, text: 'Poles' } } } }
             });
 
-            // Rate Comparison Chart
             const ctxRateComp = document.getElementById('rateComparisonChart').getContext('2d');
             chartRateComparison = new Chart(ctxRateComp, {
                 type: 'bar',
@@ -3113,7 +3122,7 @@
         }
 
         // ============================================================
-        // 14b. DRILL-DOWN DETAIL MODAL
+        // 14b. DRILL-DOWN DETAIL MODAL (weekly)
         // ============================================================
         function openDetailModal(category, group, type, weekStart) {
             const modal = document.getElementById('detailModal');
@@ -3129,7 +3138,8 @@
             }
 
             if (filtered.length === 0) {
-                body.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">No records found for this selection.</td></tr>`;
+                body.innerHTML =
+                `<tr><td colspan="5" class="text-center py-4 text-slate-400">No records found for this selection.</td></tr>`;
             } else {
                 let rows = '';
                 filtered.forEach(d => {
@@ -3165,7 +3175,7 @@
         }
 
         // ============================================================
-        // 15. SUPPLIER DETAIL MODAL (for bar chart drill-down)
+        // 15. SUPPLIER DETAIL MODAL (bar chart drill-down) + drill-through to records
         // ============================================================
         function openSupplierDetailModal(supplier, fromMonth, toMonth) {
             const modal = document.getElementById('supplierDetailModal');
@@ -3190,7 +3200,8 @@
             });
 
             if (filtered.length === 0) {
-                body.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-400">No records found for this supplier in the selected month range.</td></tr>`;
+                body.innerHTML =
+                    `<tr><td colspan="3" class="text-center py-4 text-slate-400">No records found for this supplier in the selected month range.</td></tr>`;
             } else {
                 // Group by pole class
                 const classMap = {};
@@ -3205,15 +3216,19 @@
                 let rows = '';
                 sortedClasses.forEach(cls => {
                     const data = classMap[cls];
+                    const badgeCls = getClassBadgeClass(cls);
+                    // Make the row clickable — drill through to records for this supplier + class + month range
+                    const fromVal = fromMonth || '';
+                    const toVal = toMonth || '';
                     rows += `
-                        <tr>
-                            <td class="px-4 py-2 font-medium"><span class="class-badge ${getClassBadgeClass(cls)}">${cls}</span></td>
-                            <td class="px-4 py-2 text-center">${data.qty}</td>
+                        <tr class="supplier-class-row" onclick="openSupplierClassDetailModal('${supplier}', '${cls}', '${fromVal}', '${toVal}')">
+                            <td class="px-4 py-2 font-medium"><span class="class-badge ${badgeCls}">${cls}</span></td>
+                            <td class="px-4 py-2 text-center"><span class="qty-link">${data.qty}</span></td>
                             <td class="px-4 py-2 text-right">£${data.loss.toFixed(2)}</td>
                         </tr>
                     `;
                 });
-                // Add total row
+                // Add total row (not clickable)
                 const totalQty = filtered.reduce((sum, d) => sum + d.q, 0);
                 const totalLoss = filtered.reduce((sum, d) => sum + d.l, 0);
                 rows += `
@@ -3226,15 +3241,78 @@
                 body.innerHTML = rows;
             }
 
-            const fromLabel = fromMonth ? `${fromMonth}` : 'start';
-            const toLabel = toMonth ? `${toMonth}` : 'end';
+            const fromLabel = fromMonth || 'start';
+            const toLabel = toMonth || 'end';
             title.textContent = `Loss Breakdown for ${supplier}`;
-            subtitle.textContent = `Month range: ${fromLabel} to ${toLabel} | ${filtered.length} record(s)`;
+            subtitle.textContent =
+                `Month range: ${fromLabel} to ${toLabel} | ${filtered.length} record(s) — click a class quantity to see individual records`;
             modal.classList.remove('hidden');
         }
 
         function closeSupplierDetailModal() {
             document.getElementById('supplierDetailModal').classList.add('hidden');
+        }
+
+        // ============================================================
+        // 15b. SUPPLIER CLASS DRILL-THROUGH → DETAIL MODAL
+        // ============================================================
+        function openSupplierClassDetailModal(supplier, className, fromMonth, toMonth) {
+            const modal = document.getElementById('detailModal');
+            const title = document.getElementById('detailModalTitle');
+            const subtitle = document.getElementById('detailModalSubtitle');
+            const body = document.getElementById('detailModalBody');
+
+            // Filter rawDataset by supplier, class, and month range
+            let filtered = rawDataset.filter(d => {
+                if (d.s !== supplier) return false;
+                if ((d.poleClass || 'UNKNOWN') !== className) return false;
+                const rowMonthNum = d.y * 100 + d.m;
+                let isValid = true;
+                if (fromMonth) {
+                    const fromNum = parseInt(fromMonth.replace('-', ''));
+                    if (rowMonthNum < fromNum) isValid = false;
+                }
+                if (toMonth) {
+                    const toNum = parseInt(toMonth.replace('-', ''));
+                    if (rowMonthNum > toNum) isValid = false;
+                }
+                return isValid;
+            });
+
+            if (filtered.length === 0) {
+                body.innerHTML =
+                    `<tr><td colspan="5" class="text-center py-4 text-slate-400">No records found for this selection.</td></tr>`;
+            } else {
+                let rows = '';
+                filtered.forEach(d => {
+                    const dateStr = d.dt ? formatDateLabel(d.dt) : 'Unknown';
+                    const desc = d.rawDesc || d.originalDesc || 'Unknown';
+                    const reason = d.movementReason || d.r || 'Unknown';
+                    let metres = '';
+                    if (d.c === 'Cutback / Resized') {
+                        metres = (d.linearMetresLost || 0).toFixed(1);
+                    } else {
+                        metres = '-';
+                    }
+                    rows += `
+                        <tr>
+                            <td class="px-4 py-2">${dateStr}</td>
+                            <td class="px-4 py-2">${d.s}</td>
+                            <td class="px-4 py-2">${desc}</td>
+                            <td class="px-4 py-2">${reason}</td>
+                            <td class="px-4 py-2 text-right">${metres}</td>
+                        </tr>
+                    `;
+                });
+                body.innerHTML = rows;
+            }
+
+            const fromLabel = fromMonth || 'start';
+            const toLabel = toMonth || 'end';
+            title.textContent = `${className} – ${supplier}`;
+            subtitle.textContent =
+                `Showing ${filtered.length} record(s) for ${supplier} (${className}) from ${fromLabel} to ${toLabel}`;
+            modal.classList.remove('hidden');
         }
 
         // ============================================================
@@ -3563,39 +3641,33 @@
         }
 
         // ============================================================
-        // 18. INITIALIZE APP (FIXED: set month pickers BEFORE loading data)
+        // 18. INITIALIZE APP
         // ============================================================
         async function initializeApp() {
             showLoading(true, 'Initializing app...');
             initCharts();
             resetAppData();
 
-            // --- Set date filters early so applyFilters() uses correct range on first load ---
             const now = new Date();
             const sixMonthsAgo = new Date(now);
             sixMonthsAgo.setMonth(now.getMonth() - 6);
 
-            // Weekly date pickers
             document.getElementById('weeklyFromDate').value = formatDateKey(sixMonthsAgo);
             document.getElementById('weeklyToDate').value = formatDateKey(now);
 
-            // Fabricator date pickers
             document.getElementById('fabFromDate').value = formatDateKey(sixMonthsAgo);
             document.getElementById('fabToDate').value = formatDateKey(now);
 
-            // Supplier month range pickers (default to previous month)
             const prevMonthDate = new Date();
             prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
             const prevMonthVal = prevMonthDate.getFullYear() + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
             document.getElementById('supplierFromMonth').value = prevMonthVal;
             document.getElementById('supplierToMonth').value = prevMonthVal;
 
-            // Now load data – applyFilters() will be called with the correct month range
             updateLoadingProgress(5, '📦 Loading pricing data...');
             await loadPricesFromGitHub();
             await loadDataFromGitHub();
 
-            // Additional setup that doesn't depend on data
             updateFilterControlsVisibility('dashboard');
             renderCutbackAnalytics();
             setGranularToPreviousWeek();
