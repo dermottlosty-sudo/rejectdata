@@ -15,7 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js">
     </script>
     <style>
-        /* ... all existing styles ... */
+        /* --- existing styles (unchanged) --- */
         .active-tab {
             border-bottom: 3px solid #2563eb;
             color: #2563eb;
@@ -524,6 +524,177 @@
         #supplierReviewControls select[multiple] {
             min-height: 80px;
         }
+
+        /* --- mobile friendly adjustments --- */
+        @media (max-width: 768px) {
+            header {
+                position: relative !important;
+                top: auto !important;
+                sticky: none !important;
+            }
+            #filterControls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+                padding: 0.75rem;
+            }
+            #filterControls .flex-wrap {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #filterControls select,
+            #filterControls input {
+                width: 100% !important;
+                min-width: unset;
+            }
+            .date-picker-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-picker-group input[type="date"] {
+                min-width: unset;
+                width: 100%;
+            }
+            #supplierReviewControls .grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem;
+            }
+            #supplierReviewControls select[multiple] {
+                min-height: 60px;
+            }
+            .supplier-review-card .grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            .overflow-x-auto {
+                overflow-x: auto;
+            }
+            table td, table th {
+                padding: 4px 6px !important;
+                font-size: 0.65rem !important;
+            }
+        }
+
+        /* --- new mobile-specific styles --- */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            line-height: 1;
+        }
+        .mobile-nav {
+            display: none;
+            flex-direction: column;
+            background: #0f172a;
+            padding: 0.5rem 1rem;
+            border-radius: 0 0 1rem 1rem;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 40;
+        }
+        .mobile-nav.open {
+            display: flex;
+        }
+        .mobile-nav button {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .mobile-nav button:hover,
+        .mobile-nav button:active {
+            background: #1e293b;
+            color: white;
+        }
+        .mobile-nav button.active-tab-mobile {
+            background: #2563eb;
+            color: white;
+        }
+        .filter-toggle-btn {
+            display: none;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+        }
+        .filter-toggle-btn:hover {
+            background: #e2e8f0;
+        }
+        .filter-groups-container.hidden-filters {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            .desktop-nav {
+                display: none !important;
+            }
+            .filter-toggle-btn {
+                display: inline-block;
+            }
+            header .flex-wrap {
+                flex-wrap: nowrap;
+            }
+            header h1 {
+                font-size: 1rem;
+            }
+            header .subtitle {
+                display: none;
+            }
+            header .logo-icon {
+                font-size: 1.5rem;
+                padding: 0.2rem;
+            }
+            header .flex.items-center.space-x-3 {
+                gap: 0.5rem;
+            }
+            #filterControls .flex-wrap {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #filterControls select,
+            #filterControls input {
+                width: 100% !important;
+            }
+            .date-picker-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .date-picker-group input[type="date"] {
+                min-width: unset;
+                width: 100%;
+            }
+            .chart-container {
+                height: 220px;
+            }
+            #supplierReviewControls .grid {
+                grid-template-columns: 1fr !important;
+            }
+            .supplier-review-card .grid {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            .modal-box {
+                max-width: 95% !important;
+                padding: 1rem !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800">
@@ -644,36 +815,62 @@
 
     <div id="toast" class="toast"></div>
 
-    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="p-2 bg-emerald-600 rounded-lg text-2xl">🌲</div>
+    <!-- =============== HEADER (modified for mobile) =============== -->
+    <header class="bg-slate-900 text-white shadow-xl sticky top-0 z-50 relative">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-2">
+                <div class="p-1.5 bg-emerald-600 rounded-lg text-xl logo-icon">🌲</div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">Pole Fabrication & Quality Analytics</h1>
-                    <p class="text-xs text-slate-400">GitHub-driven • Reject & Cutback Analysis</p>
+                    <h1 class="text-lg font-bold tracking-wide">Pole Fab & Quality</h1>
+                    <p class="text-xs text-slate-400 subtitle">Reject & Cutback Analysis</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <button onclick="showExecutiveSummary(true)" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition shadow flex items-center gap-1">📊 Summary</button>
-                <nav class="flex flex-wrap gap-1 bg-slate-800 p-1.5 rounded-xl text-sm font-medium">
-                    <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2 rounded-lg bg-blue-600 text-white transition shadow">Dashboard & Trends</button>
-                    <button onclick="switchTab('yoy')" id="tabBtn-yoy" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">YoY Comparison</button>
-                    <button onclick="switchTab('weekly')" id="tabBtn-weekly" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Weekly Analysis</button>
-                    <button onclick="switchTab('cutback')" id="tabBtn-cutback" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📐 Cutback Analytics</button>
-                    <button onclick="switchTab('fabricators')" id="tabBtn-fabricators" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">👷 Pole Fabricators</button>
-                    <button onclick="switchTab('supplier-review')" id="tabBtn-supplier-review" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📋 Supplier Review</button>
-                    <button onclick="switchTab('import')" id="tabBtn-import" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Data Source</button>
-                    <button onclick="switchTab('admin')" id="tabBtn-admin" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Admin Costing</button>
-                </nav>
+            <div class="flex items-center gap-2">
+                <button onclick="showExecutiveSummary(true)" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1.5 rounded-lg font-semibold transition shadow flex items-center gap-1">📊 Summary</button>
+                <!-- Hamburger button -->
+                <button class="mobile-menu-btn" id="menuToggle" aria-label="Toggle navigation">☰</button>
             </div>
+        </div>
+        <!-- Mobile navigation (hidden by default) -->
+        <nav class="mobile-nav" id="mobileNav">
+            <button onclick="switchTab('dashboard')" class="active-tab-mobile" data-tab="dashboard">📊 Dashboard</button>
+            <button onclick="switchTab('yoy')" data-tab="yoy">📈 YoY Comparison</button>
+            <button onclick="switchTab('weekly')" data-tab="weekly">📅 Weekly Analysis</button>
+            <button onclick="switchTab('cutback')" data-tab="cutback">📐 Cutback Analytics</button>
+            <button onclick="switchTab('fabricators')" data-tab="fabricators">👷 Pole Fabricators</button>
+            <button onclick="switchTab('supplier-review')" data-tab="supplier-review">📋 Supplier Review</button>
+            <button onclick="switchTab('import')" data-tab="import">💾 Data Source</button>
+            <button onclick="switchTab('admin')" data-tab="admin">⚙️ Admin Costing</button>
+        </nav>
+        <!-- Desktop navigation (hidden on mobile) -->
+        <div class="max-w-7xl mx-auto px-4 pb-1 desktop-nav">
+            <nav class="flex flex-wrap gap-1 bg-slate-800 p-1.5 rounded-xl text-sm font-medium">
+                <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="px-4 py-2 rounded-lg bg-blue-600 text-white transition shadow">Dashboard & Trends</button>
+                <button onclick="switchTab('yoy')" id="tabBtn-yoy" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">YoY Comparison</button>
+                <button onclick="switchTab('weekly')" id="tabBtn-weekly" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Weekly Analysis</button>
+                <button onclick="switchTab('cutback')" id="tabBtn-cutback" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📐 Cutback Analytics</button>
+                <button onclick="switchTab('fabricators')" id="tabBtn-fabricators" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">👷 Pole Fabricators</button>
+                <button onclick="switchTab('supplier-review')" id="tabBtn-supplier-review" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">📋 Supplier Review</button>
+                <button onclick="switchTab('import')" id="tabBtn-import" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Data Source</button>
+                <button onclick="switchTab('admin')" id="tabBtn-admin" class="px-4 py-2 rounded-lg text-slate-300 hover:text-white transition">Admin Costing</button>
+            </nav>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-4">
 
-        <!-- Filter Controls Bar -->
-        <div id="filterControls" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-8 flex flex-wrap gap-6 items-center justify-between">
-            <div class="flex flex-wrap items-center gap-6" id="filterGroups">
+        <!-- Filter Controls Bar (modified: added toggle button) -->
+        <div id="filterControls" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex items-center gap-2 w-full md:w-auto">
+                <button class="filter-toggle-btn" id="filterToggleBtn">🔽 Filters</button>
+                <div class="flex items-center space-x-2 text-xs bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 ml-auto">
+                    <span class="data-source-status">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span class="font-medium text-slate-600">Data: <span id="dataStatus" class="text-slate-600 font-bold">Loading...</span></span>
+                    </span>
+                </div>
+            </div>
+            <div class="filter-groups-container flex flex-wrap items-center gap-4" id="filterGroupsContainer">
                 <div id="supplierFilterGroup">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Supplier:</label>
                     <select id="globalSupplierFilter" onchange="applyFilters()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg px-3 py-2 font-semibold focus:ring-2 focus:ring-blue-500">
@@ -706,16 +903,12 @@
                         <option value="2023">2023 Season</option>
                     </select>
                 </div>
-                <div class="flex items-center space-x-2 text-xs bg-slate-100 px-3 py-2 rounded-lg border border-slate-200">
+                <div class="flex items-center space-x-2 text-xs bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 hidden md:flex">
                     <span class="data-source-status">
-                        <span class="status-dot" id="statusDot"></span>
-                        <span class="font-medium text-slate-600">Data: <span id="dataStatus" class="text-slate-600 font-bold">Loading...</span></span>
+                        <span class="status-dot" id="statusDotDesktop"></span>
+                        <span class="font-medium text-slate-600">Data: <span id="dataStatusDesktop" class="text-slate-600 font-bold">Loading...</span></span>
                     </span>
                 </div>
-            </div>
-            <div class="flex items-center space-x-3 text-xs bg-slate-100 px-3 py-2 rounded-lg border border-slate-200">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="dataSourceInfo" class="text-slate-500">📦 GitHub</span>
             </div>
         </div>
 
@@ -1037,11 +1230,11 @@
             <div id="fabSummaryStats" class="grid grid-cols-1 md:grid-cols-4 gap-6"></div>
         </div>
 
-        <!-- SUPPLIER REVIEW TAB -->
+        <!-- SUPPLIER REVIEW TAB (ENHANCED) -->
         <div id="view-supplier-review" class="hidden space-y-6 fade-in">
             <div id="supplierReviewControls" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h2 class="text-lg font-bold text-slate-900 mb-4">📋 Supplier Performance Review</h2>
-                <p class="text-xs text-slate-500 mb-4">Select one or more suppliers and a date range to generate a summary for your annual review meetings.</p>
+                <p class="text-xs text-slate-500 mb-4">Select one or more suppliers and a date range to generate a summary for your annual review meetings. <span class="font-medium text-red-600">Damage records are excluded</span> because they are not claimable. Cutback costs are now included.</p>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Suppliers</label>
@@ -1070,7 +1263,7 @@
             <!-- Chart -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <h3 class="text-base font-bold text-slate-800 mb-2">Monthly Reject Rate (%)</h3>
-                <p class="text-xs text-slate-400 mb-4">Each line represents a selected supplier. Reject rate = (Defective + Boiler Fuel) / Total Processed * 100</p>
+                <p class="text-xs text-slate-400 mb-4">Each line represents a selected supplier. Reject rate = (Defective + Boiler Fuel) / Total Processed * 100 (damage excluded).</p>
                 <div id="supplierReviewChartContainer"><canvas id="supplierReviewChart"></canvas></div>
             </div>
 
@@ -1079,7 +1272,7 @@
                 <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                     <div>
                         <h3 class="text-sm font-bold text-slate-800">Monthly Breakdown & Claim Indicator</h3>
-                        <p class="text-xs text-slate-400">Months with total loss > €100 are flagged for potential claim (Defective + Boiler Fuel only).</p>
+                        <p class="text-xs text-slate-400">Reject loss = Defective + Boiler (damage excluded). Claim > €100 based on reject loss only. Cutback losses shown separately.</p>
                     </div>
                     <button onclick="exportSupplierReview()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-3.5 py-2 rounded-lg font-semibold transition border border-slate-300">📥 Export CSV</button>
                 </div>
@@ -1092,6 +1285,9 @@
                                 <th class="px-4 py-3 text-right">Processed</th>
                                 <th class="px-4 py-3 text-right">Rejects</th>
                                 <th class="px-4 py-3 text-right">Reject Rate</th>
+                                <th class="px-4 py-3 text-right">Reject Loss (€)</th>
+                                <th class="px-4 py-3 text-right">Cutbacks</th>
+                                <th class="px-4 py-3 text-right">Cutback Loss (€)</th>
                                 <th class="px-4 py-3 text-right">Total Loss (€)</th>
                                 <th class="px-4 py-3 text-center">Claim > €100?</th>
                             </tr>
@@ -1368,6 +1564,7 @@
                 const dot = document.getElementById('statusDot');
                 dot.className = 'status-dot loading';
                 document.getElementById('dataStatus').textContent = 'Loading...';
+                document.getElementById('dataStatusDesktop').textContent = 'Loading...';
             } else {
                 overlay.classList.add('hidden');
             }
@@ -1761,8 +1958,12 @@
             document.getElementById('importStatus').classList.add('hidden');
             document.getElementById('dataStatus').textContent = '⚠️ No Data';
             document.getElementById('dataStatus').className = 'text-red-600 font-bold';
+            document.getElementById('dataStatusDesktop').textContent = '⚠️ No Data';
+            document.getElementById('dataStatusDesktop').className = 'text-red-600 font-bold';
             const dot = document.getElementById('statusDot');
             dot.className = 'status-dot error';
+            const dotDesktop = document.getElementById('statusDotDesktop');
+            if (dotDesktop) dotDesktop.className = 'status-dot error';
             if (chartPie) { chartPie.data.labels = [];
                 chartPie.data.datasets[0].data = [];
                 chartPie.update(); }
@@ -1811,8 +2012,12 @@
             document.getElementById('importedRecordCount').innerText = data.length;
             document.getElementById('dataStatus').textContent = '● ' + data.length + ' Records';
             document.getElementById('dataStatus').className = 'text-emerald-600 font-bold';
+            document.getElementById('dataStatusDesktop').textContent = '● ' + data.length + ' Records';
+            document.getElementById('dataStatusDesktop').className = 'text-emerald-600 font-bold';
             const dot = document.getElementById('statusDot');
             dot.className = 'status-dot loaded';
+            const dotDesktop = document.getElementById('statusDotDesktop');
+            if (dotDesktop) dotDesktop.className = 'status-dot loaded';
             showToast('✅ Loaded ' + data.length + ' records from GitHub.', false);
             populateFabricatorDropdown();
             applyFilters();
@@ -1871,8 +2076,12 @@
                         showToast('⚠️ No Reject or Cutback records found. Check console.', true);
                         document.getElementById('dataStatus').textContent = '❌ No Records';
                         document.getElementById('dataStatus').className = 'text-red-600 font-bold';
+                        document.getElementById('dataStatusDesktop').textContent = '❌ No Records';
+                        document.getElementById('dataStatusDesktop').className = 'text-red-600 font-bold';
                         const dot = document.getElementById('statusDot');
                         dot.className = 'status-dot error';
+                        const dotDesktop = document.getElementById('statusDotDesktop');
+                        if (dotDesktop) dotDesktop.className = 'status-dot error';
                     } else {
                         setDataset(dataset);
                         document.getElementById('dataPromptModal').classList.add('hidden');
@@ -1903,8 +2112,12 @@
                     showToast('⚠️ No Reject or Cutback records found in GitHub data.', true);
                     document.getElementById('dataStatus').textContent = '❌ No Records';
                     document.getElementById('dataStatus').className = 'text-red-600 font-bold';
+                    document.getElementById('dataStatusDesktop').textContent = '❌ No Records';
+                    document.getElementById('dataStatusDesktop').className = 'text-red-600 font-bold';
                     const dot = document.getElementById('statusDot');
                     dot.className = 'status-dot error';
+                    const dotDesktop = document.getElementById('statusDotDesktop');
+                    if (dotDesktop) dotDesktop.className = 'status-dot error';
                     showLoading(false);
                     document.getElementById('dataPromptModal').classList.remove('hidden');
                     return;
@@ -1919,8 +2132,12 @@
                 showToast('❌ Failed to load data from GitHub: ' + error.message, true);
                 document.getElementById('dataStatus').textContent = '❌ Load Failed';
                 document.getElementById('dataStatus').className = 'text-red-600 font-bold';
+                document.getElementById('dataStatusDesktop').textContent = '❌ Load Failed';
+                document.getElementById('dataStatusDesktop').className = 'text-red-600 font-bold';
                 const dot = document.getElementById('statusDot');
                 dot.className = 'status-dot error';
+                const dotDesktop = document.getElementById('statusDotDesktop');
+                if (dotDesktop) dotDesktop.className = 'status-dot error';
                 showLoading(false);
                 document.getElementById('dataPromptModal').classList.remove('hidden');
             }
@@ -1980,7 +2197,7 @@
         function updateFilterControlsVisibility(activeTab) {
             const supplierGroup = document.getElementById('supplierFilterGroup');
             const yearGroup = document.getElementById('yearFilterGroup');
-            const filterGroups = document.getElementById('filterGroups');
+            const filterGroups = document.getElementById('filterGroupsContainer');
             if (activeTab === 'weekly' || activeTab === 'fabricators' || activeTab === 'supplier-review') {
                 filterGroups.classList.add('filter-groups-hidden');
             } else {
@@ -2621,6 +2838,13 @@
                 populateSupplierReviewSelect();
                 if (rawDataset.length > 0) generateSupplierReview();
             }
+            // Update mobile active tab
+            document.querySelectorAll('.mobile-nav button').forEach(btn => {
+                btn.classList.remove('active-tab-mobile');
+                if (btn.dataset.tab === tab) btn.classList.add('active-tab-mobile');
+            });
+            // Close mobile nav after selection
+            document.getElementById('mobileNav').classList.remove('open');
         }
 
         function exportTableToCSV() { alert('Exporting summary CSV... (placeholder)'); }
@@ -3752,7 +3976,7 @@
         }
 
         // ============================================================
-        // NEW: SUPPLIER REVIEW FUNCTIONS
+        // NEW: SUPPLIER REVIEW FUNCTIONS (ENHANCED)
         // ============================================================
 
         function populateSupplierReviewSelect() {
@@ -3796,41 +4020,86 @@
 
             const supplierData = {};
             selectedSuppliers.forEach(sup => {
+                // All processed rows for this supplier in date range
                 const processedRows = allRowsCache.filter(row => {
                     if (!row._parsedDate || isNaN(row._parsedDate.getTime())) return false;
                     if (row._supplier !== sup) return false;
                     return row._parsedDate >= fromDate && row._parsedDate <= toDate;
                 });
+
+                // Reject rows (Defective + Boiler) – exclude damage
                 const rejectRows = rawDataset.filter(d => {
                     if (d.s !== sup) return false;
                     if (d.c !== 'Defective Pole' && d.c !== 'Boiler Fuel') return false;
-                    return d.dt >= fromDate && d.dt <= toDate;
+                    if (d.dt < fromDate || d.dt > toDate) return false;
+                    // Exclude damage
+                    const reason = (d.movementReason || '').toLowerCase();
+                    if (reason.includes('damage')) return false;
+                    return true;
                 });
+
+                // Cutback rows – exclude damage
+                const cutbackRows = rawDataset.filter(d => {
+                    if (d.s !== sup) return false;
+                    if (d.c !== 'Cutback / Resized') return false;
+                    if (d.dt < fromDate || d.dt > toDate) return false;
+                    const reason = (d.movementReason || '').toLowerCase();
+                    if (reason.includes('damage')) return false;
+                    return true;
+                });
+
+                // Monthly aggregation
                 const monthMap = {};
                 processedRows.forEach(row => {
                     const key = row._parsedDate.getFullYear() + '-' + String(row._parsedDate.getMonth() + 1).padStart(2, '0');
-                    if (!monthMap[key]) monthMap[key] = { year: row._parsedDate.getFullYear(), month: row._parsedDate.getMonth() + 1, processed: 0, rejects: 0, loss: 0 };
+                    if (!monthMap[key]) monthMap[key] = { year: row._parsedDate.getFullYear(), month: row._parsedDate.getMonth() + 1, processed: 0, rejects: 0, rejectLoss: 0, cutbacks: 0, cutbackLoss: 0 };
                     monthMap[key].processed += 1;
                 });
                 rejectRows.forEach(d => {
                     const key = d.y + '-' + String(d.m).padStart(2, '0');
                     if (monthMap[key]) {
                         monthMap[key].rejects += d.q;
-                        monthMap[key].loss += d.l;
+                        monthMap[key].rejectLoss += d.l;
                     } else {
                         if (!monthMap[key]) {
-                            monthMap[key] = { year: d.y, month: d.m, processed: 0, rejects: 0, loss: 0 };
+                            monthMap[key] = { year: d.y, month: d.m, processed: 0, rejects: 0, rejectLoss: 0, cutbacks: 0, cutbackLoss: 0 };
                         }
                         monthMap[key].rejects += d.q;
-                        monthMap[key].loss += d.l;
+                        monthMap[key].rejectLoss += d.l;
                     }
                 });
+                cutbackRows.forEach(d => {
+                    const key = d.y + '-' + String(d.m).padStart(2, '0');
+                    if (monthMap[key]) {
+                        monthMap[key].cutbacks += d.q;
+                        monthMap[key].cutbackLoss += d.l;
+                    } else {
+                        if (!monthMap[key]) {
+                            monthMap[key] = { year: d.y, month: d.m, processed: 0, rejects: 0, rejectLoss: 0, cutbacks: 0, cutbackLoss: 0 };
+                        }
+                        monthMap[key].cutbacks += d.q;
+                        monthMap[key].cutbackLoss += d.l;
+                    }
+                });
+
                 const months = Object.keys(monthMap).sort();
                 const monthlyData = months.map(key => {
                     const m = monthMap[key];
                     const rate = m.processed > 0 ? (m.rejects / m.processed) * 100 : 0;
-                    return { key, year: m.year, month: m.month, processed: m.processed, rejects: m.rejects, rate, loss: m.loss };
+                    return {
+                        key,
+                        year: m.year,
+                        month: m.month,
+                        processed: m.processed,
+                        rejects: m.rejects,
+                        rejectLoss: m.rejectLoss,
+                        cutbacks: m.cutbacks,
+                        cutbackLoss: m.cutbackLoss,
+                        rate
+                    };
                 });
+
+                // Top rejection reasons (exclude damage already)
                 const reasonCount = {};
                 rejectRows.forEach(d => {
                     const reason = d.movementReason || 'Unknown';
@@ -3841,16 +4110,20 @@
 
                 const totalProcessed = processedRows.length;
                 const totalRejects = rejectRows.reduce((sum, d) => sum + d.q, 0);
+                const totalRejectLoss = rejectRows.reduce((sum, d) => sum + d.l, 0);
+                const totalCutbacks = cutbackRows.reduce((sum, d) => sum + d.q, 0);
+                const totalCutbackLoss = cutbackRows.reduce((sum, d) => sum + d.l, 0);
                 const totalRate = totalProcessed > 0 ? (totalRejects / totalProcessed) * 100 : 0;
-                const totalLoss = rejectRows.reduce((sum, d) => sum + d.l, 0);
 
                 supplierData[sup] = {
                     monthly: monthlyData,
                     topReasons,
                     totalProcessed,
                     totalRejects,
+                    totalRejectLoss,
+                    totalCutbacks,
+                    totalCutbackLoss,
                     totalRate,
-                    totalLoss,
                 };
             });
 
@@ -3871,7 +4144,9 @@
                             <div><span class="text-xs text-slate-400">Processed</span><br><span class="font-bold text-slate-800">${data.totalProcessed}</span></div>
                             <div><span class="text-xs text-slate-400">Rejects</span><br><span class="font-bold text-slate-800">${data.totalRejects}</span></div>
                             <div><span class="text-xs text-slate-400">Reject Rate</span><br><span class="font-bold ${rateColor}">${data.totalRate.toFixed(2)}%</span></div>
-                            <div><span class="text-xs text-slate-400">Total Loss (€)</span><br><span class="font-bold text-slate-800">${data.totalLoss.toFixed(2)}</span></div>
+                            <div><span class="text-xs text-slate-400">Reject Loss (€)</span><br><span class="font-bold text-slate-800">${data.totalRejectLoss.toFixed(2)}</span></div>
+                            <div><span class="text-xs text-slate-400">Cutbacks</span><br><span class="font-bold text-slate-800">${data.totalCutbacks}</span></div>
+                            <div><span class="text-xs text-slate-400">Cutback Loss (€)</span><br><span class="font-bold text-slate-800">${data.totalCutbackLoss.toFixed(2)}</span></div>
                         </div>
                         <div class="mt-2">
                             <span class="text-xs text-slate-400">Top reasons:</span>
@@ -3970,8 +4245,10 @@
                     const m = monthMap[key];
                     if (m) {
                         const rate = m.rate;
-                        const loss = m.loss;
-                        const claim = loss > 100;
+                        const rejectLoss = m.rejectLoss;
+                        const cutbackLoss = m.cutbackLoss;
+                        const totalLoss = rejectLoss + cutbackLoss;
+                        const claim = rejectLoss > 100; // claim based on reject loss only
                         const claimClass = claim ? 'claim-highlight' : 'claim-ok';
                         const claimText = claim ? '⚠️ Yes' : '✓ No';
                         rows += `
@@ -3981,11 +4258,15 @@
                                 <td class="px-4 py-2.5 text-right">${m.processed}</td>
                                 <td class="px-4 py-2.5 text-right">${m.rejects}</td>
                                 <td class="px-4 py-2.5 text-right">${rate.toFixed(2)}%</td>
-                                <td class="px-4 py-2.5 text-right">${loss.toFixed(2)}</td>
+                                <td class="px-4 py-2.5 text-right">${rejectLoss.toFixed(2)}</td>
+                                <td class="px-4 py-2.5 text-right">${m.cutbacks}</td>
+                                <td class="px-4 py-2.5 text-right">${cutbackLoss.toFixed(2)}</td>
+                                <td class="px-4 py-2.5 text-right">${totalLoss.toFixed(2)}</td>
                                 <td class="px-4 py-2.5 text-center"><span class="${claimClass}">${claimText}</span></td>
                             </tr>
                         `;
                     } else {
+                        // No data for this supplier in that month – show zeros
                         rows += `
                             <tr class="hover:bg-slate-50 text-slate-400">
                                 <td class="px-4 py-2.5 font-bold text-slate-800">${sup}</td>
@@ -3994,22 +4275,25 @@
                                 <td class="px-4 py-2.5 text-right">0</td>
                                 <td class="px-4 py-2.5 text-right">0.00%</td>
                                 <td class="px-4 py-2.5 text-right">0.00</td>
+                                <td class="px-4 py-2.5 text-right">0</td>
+                                <td class="px-4 py-2.5 text-right">0.00</td>
+                                <td class="px-4 py-2.5 text-right">0.00</td>
                                 <td class="px-4 py-2.5 text-center"><span class="claim-ok">✓ No</span></td>
                             </tr>
                         `;
                     }
                 });
             }
-            tbody.innerHTML = rows || '<tr><td colspan="7" class="text-center py-6 text-slate-400">No data available.</td></tr>';
+            tbody.innerHTML = rows || '<tr><td colspan="10" class="text-center py-6 text-slate-400">No data available.</td></tr>';
         }
 
         function exportSupplierReview() {
             const table = document.getElementById('supplierReviewTable');
-            let csv = 'Supplier,Month,Processed,Rejects,Reject Rate (%),Total Loss (€),Claim > €100?\n';
+            let csv = 'Supplier,Month,Processed,Rejects,Reject Rate (%),Reject Loss (€),Cutbacks,Cutback Loss (€),Total Loss (€),Claim > €100?\n';
             const rows = table.querySelectorAll('tbody tr');
             rows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length < 7) return;
+                if (cells.length < 10) return;
                 const rowData = [];
                 cells.forEach(cell => rowData.push(cell.textContent.trim()));
                 csv += rowData.join(',') + '\n';
@@ -4025,11 +4309,43 @@
         }
 
         // ============================================================
-        // 18. INITIALIZE APP
+        // 18. MOBILE TOGGLES
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hamburger menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const mobileNav = document.getElementById('mobileNav');
+            menuToggle.addEventListener('click', function() {
+                mobileNav.classList.toggle('open');
+            });
+            // Close menu when a tab is clicked (handled in switchTab)
+            // Filter toggle
+            const filterToggle = document.getElementById('filterToggleBtn');
+            const filterContainer = document.getElementById('filterGroupsContainer');
+            filterToggle.addEventListener('click', function() {
+                filterContainer.classList.toggle('hidden-filters');
+                filterToggle.textContent = filterContainer.classList.contains('hidden-filters') ? '🔽 Filters' : '🔼 Filters';
+            });
+            // Ensure filter groups are visible on desktop
+            if (window.innerWidth > 768) {
+                filterContainer.classList.remove('hidden-filters');
+                filterToggle.textContent = '🔼 Filters';
+            }
+            // Sync status dots
+            const statusDot = document.getElementById('statusDot');
+            const statusDotDesktop = document.getElementById('statusDotDesktop');
+            // Initially set both to same state
+            const dataStatus = document.getElementById('dataStatus');
+            const dataStatusDesktop = document.getElementById('dataStatusDesktop');
+            // They are updated in setDataset and resetAppData
+        });
+
+        // ============================================================
+        // 19. INITIALIZE APP
         // ============================================================
         async function initializeApp() {
             showLoading(true, 'Initializing app...');
-            initCharts();  // NOW DEFINED
+            initCharts();
             resetAppData();
 
             const now = new Date();
@@ -4071,15 +4387,19 @@
         }
 
         // ============================================================
-        // 19. ONLOAD
+        // 20. ONLOAD
         // ============================================================
         window.onload = function() {
             document.getElementById('passwordModal').classList.remove('hidden');
             document.getElementById('passwordInput').focus();
             document.getElementById('dataStatus').textContent = '🔐 Locked';
             document.getElementById('dataStatus').className = 'text-amber-600 font-bold';
+            document.getElementById('dataStatusDesktop').textContent = '🔐 Locked';
+            document.getElementById('dataStatusDesktop').className = 'text-amber-600 font-bold';
             const dot = document.getElementById('statusDot');
             dot.className = 'status-dot';
+            const dotDesktop = document.getElementById('statusDotDesktop');
+            if (dotDesktop) dotDesktop.className = 'status-dot';
         };
     </script>
 
